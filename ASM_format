@@ -1,0 +1,198 @@
+#!/bin/bash
+
+function ctrl_c(){
+
+    printf "\n\n${r}[ - ]${e} Bye! ${r}<3${e}\n\n"
+    stty echo; exit 0
+}
+
+function helpPanel(){
+
+    printf "%125s\n\n" " " | tr " " "-"
+    cat <<-!
+        [ ! ] Posible things that you may know if you see this:
+        [ x ] You must run this script as a root.
+        [ x ] This script was made only for Solaris O.S 
+        [ x ] You entered an invalid parameter or are missing one.
+        [ - ] This can be showed with the flag -h
+
+        `printf "%117s\n" " " | tr " " "-"`
+                                                        HELP PANEL!
+        `printf "%117s\n" " " | tr " " "-"`
+        Execute this script as a bash or give it the right permissions to execute ./
+        
+        USAGE:
+        -r  You can specify a range for example: 10-50 or it work as a single number.
+        -d  You must specify the nomenclature of device, for example: starts with c0d or c1d or c2d and so on..
+            to know what type of nomenclature of device has you, try to do an echo | format 
+            Example output:
+
+            AVAILABLE DISK SELECTIONS:
+               0. c1d0 <QEMU HAR-QM0000-0001-20.00GB> # <- as you can see its start with c1d and 0 its the id of the disk.
+                  /pci@0,0/pci-ide@1,1/ide@0/cmdk@0,0
+     
+        EXAMPLES:
+
+        1. Format disk from 20 to 50 with nomenclature of device c0d
+        
+        ./ASM_format -r 20-50 -d c0d
+
+        2. Format a single disk with number 10 with nomenclature of device c2d
+        
+        ./ASM_format -r 10 -d c2d
+
+	!
+    printf "\n%125s\n" " " | tr " " "-"
+}
+
+function single_disk(){
+
+    while true; do
+
+        read -p "Are you sure to continue (y/n)?:  " answer
+        case $answer in
+            y) 
+             printf "${y}[!]${e} Starting to formatting disk(s). Please, wait...\n"; 
+                   format -d ${disk} <<-! 2>&1 >/dev/null
+                   ${process[0]}
+                   ${process[1]}
+                   ${process[2]}
+                   ${process[3]}
+                   ${process[4]}
+                   ${process[5]}
+                   ${process[6]}
+                   ${process[7]}
+                   ${process[8]}
+                   ${process[9]}
+                   ${process[10]}
+                   ${process[11]}
+                   ${process[12]}
+                   ${process[13]}
+                   ${process[14]}
+                   ${process[15]}
+                   ${process[16]}
+                   ${process[17]}
+                   ${process[18]}
+                   ${process[19]}
+                   ${process[20]}${disk##${device}}
+                   ${process[21]}
+                   ${process[22]}
+!
+              printf "${lg}[+]${e} ${cy}We're done!${e} ${r}<3${e}\n"; break ;;
+            n) 
+              printf "\n\n${y}[!]Be aware!!!${e}\n\n"; break;;
+            *) 
+              set -e; printf "${r}Please select a valid option!\n${e}" ;;
+        esac
+    done
+
+
+}
+
+function range_disks(){
+
+    while true; do
+
+        read -p "Are you sure to continue (y/n)?:  " answer
+        case $answer in
+            y) 
+              printf "${y}[!]${e} Starting to formatting disk(s). Please, wait...\n"; 
+               for d in ${arr[@]}; do
+                   format -d ${d} <<-!
+                   ${process[0]}
+                   ${process[1]}
+                   ${process[2]}
+                   ${process[3]}
+                   ${process[4]}
+                   ${process[5]}
+                   ${process[6]}
+                   ${process[7]}
+                   ${process[8]}
+                   ${process[9]}
+                   ${process[10]}
+                   ${process[11]}
+                   ${process[12]}
+                   ${process[13]}
+                   ${process[14]}
+                   ${process[15]}
+                   ${process[16]}
+                   ${process[17]}
+                   ${process[18]}
+                   ${process[19]}
+                   ${process[20]}${d##${device}}
+                   ${process[21]}
+                   ${process[22]}
+!
+               done 2>&1 >/dev/null; 
+               printf "${lg}[+]${e} ${cy}We're done!${e} ${r}<3${e}\n"; break ;;
+            n)
+              printf "\n\n${y}[!]Be aware!!!${e}\n\n"; break;;
+            *) 
+              set -e; printf "${r}Please select a valid option!\n${e}" ;;
+        esac
+    done
+
+}
+
+function checking_disk(){
+
+    read -d "" -ra num <<< ${range_disks//-/$'\n'}
+
+    [[ ${#num[@]} -eq 2 ]] && { \
+        for (( x=${num[0]}; x<=${num[1]}; x++ )){
+
+            declare disk="${device}${x}"
+            format -e ${disk} <<! 2>&1 >/dev/null
+            quit
+!
+            [[ ! $? -eq 0 ]] && { printf "${r}[x]${e} Not disk ${disk} found.\n\n"; exit 1 ;}
+            declare -a arr+=(${disk})
+        } 
+        
+        printf "%s\n${y}%s${e}\n" "We're gonna formatting theses disks:" ${arr[*]}
+        range_disks
+    } || { \
+       declare disk="${device}${num}"
+       format -e ${disk} <<! 2>&1 >/dev/null
+       quit
+!
+       [[ ! $? -eq 0 ]] && { \
+            printf "${r}[x]${e} Not disk found.\n\n"        
+       } || { \
+            printf "%s\n${y}%s${e}\n" "We're gonna formatting this disk:" ${disk}
+            single_disk
+       }
+    }
+}
+
+function __main__(){
+
+    declare -g y="\e[33m"
+    declare -g r="\e[31m"
+    declare -g mg="\e[35m"
+    declare -g cy="\e[36m"
+    declare -g lg="\e[92m"
+    declare -g e="\e[0m"
+    declare -i count=0
+    declare -a process=("p" "p" "0" "" "" "0" "0" "1" "" "" "0" "0" "6" "" "" "9" "$" "p" "q" "volname" "ASM" "y" "q")
+    export PATH=/usr/bin:/usr/sbin
+    local OPTIND
+    shopt -s extglob 
+    while getopts ":r:d:h:" args; do
+        case $args in
+            r) range_disks=($OPTARG); let count++ ;;
+            d) device=$OPTARG; let count++ ;; 
+            h) helpPanel=$OPTARG ;;
+        esac
+    done
+
+    [[ $count -ne 2 || ! ${UID} -eq 0 || ! ${OSTYPE} =~ solaris* ]] && { \
+        printf ${y}; helpPanel ;printf ${e}
+    } || { \
+        trap ctrl_c SIGINT
+        checking_disk
+        shopt -u extglob
+    }
+}
+                
+__main__ "$@"
